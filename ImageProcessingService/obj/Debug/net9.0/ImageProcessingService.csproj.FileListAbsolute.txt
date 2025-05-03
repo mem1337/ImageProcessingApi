@@ -300,3 +300,5 @@
 /home/anon/RiderProjects/ImageProcessingService/ImageProcessingService/bin/Debug/net9.0/runtimes/win-x64/native/e_sqlite3.dll
 /home/anon/RiderProjects/ImageProcessingService/ImageProcessingService/bin/Debug/net9.0/runtimes/win-x86/native/e_sqlite3.dll
 /home/anon/RiderProjects/ImageProcessingService/ImageProcessingService/bin/Debug/net9.0/runtimes/win/lib/net6.0/System.Runtime.Caching.dll
+/home/anon/RiderProjects/ImageProcessingService/ImageProcessingService/obj/Debug/net9.0/ImageProcessingService.sourcelink.json
+/home/anon/RiderProjects/ImageProcessingService/ImageProcessingService/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll

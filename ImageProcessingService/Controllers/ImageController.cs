@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ImageProcessingService.Context;
-using ImageProcessingService.Models;
 using ImageProcessingService.Models.ImageModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImageProcessingService.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
+    [Route("[action]")]
     [ApiController]
     public class ImageController : ControllerBase
     {

@@ -12,10 +12,12 @@ namespace ImageProcessingService.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IJwt _jwt;
 
-        public UserController(AppDbContext context)
+        public UserController(AppDbContext context, JWT jwt)
         {
             _context = context;
+            _jwt = jwt;
         }
 
         // GET: api/User
@@ -34,7 +36,7 @@ namespace ImageProcessingService.Controllers
 
         // GET: api/User/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserJwtResponse>> users(int id)
+        public async Task<ActionResult<UserDto>> users(int id)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -43,14 +45,13 @@ namespace ImageProcessingService.Controllers
                 return NotFound();
             }
 
-            var userResponse = new UserJwtResponse
+            var userDto = new UserDto
             {
                 UserId = user.UserId,
-                UserEmail = user.UserEmail,
-                UserJwt = "placeholder"
+                UserEmail = user.UserEmail
             };
             
-            return userResponse;
+            return userDto;
         }
         
         [HttpPost]
@@ -67,12 +68,18 @@ namespace ImageProcessingService.Controllers
             
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
+            var userDto = new UserDto
+            {
+                UserId = user.UserId,
+                UserEmail = user.UserEmail
+            };
             
-            return CreatedAtAction("Users", new { id = user.UserId }, user);
+            return CreatedAtAction("Users", new { id = user.UserId }, userDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserJwtResponse>> login([FromBody] UserRegisterLogin userLogin)
+        public async Task<ActionResult<UserResponse>> login([FromBody] UserRegisterLogin userLogin)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserEmail == userLogin.UserEmail);
             if (user?.UserHash != await Hash.GenerateHash(userLogin.UserPassword, user.UserSalt))
@@ -80,13 +87,12 @@ namespace ImageProcessingService.Controllers
                 return NotFound();
             }
 
-            var userResponse = new UserJwtResponse
+            var userResponse = new UserResponse
             {
-                UserId = user.UserId,
-                UserEmail = user.UserEmail,
-                UserJwt = "placeholder"
+                AuthResult = true,
+                AuthToken = await _jwt.GenerateToken()
             };
-
+            
             return userResponse;
         }
 
