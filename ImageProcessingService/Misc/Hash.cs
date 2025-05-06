@@ -3,11 +3,11 @@ using System.Text;
 
 namespace ImageProcessingService.Misc;
 
-public static class Hash
+public class Hash : IHash
 {
     private const int SizeInBytes = 128 / 8;
 
-    public static Task<string> GenerateSalt()
+    public Task<string> GenerateSalt()
     {
         byte[] saltBytes = new byte[SizeInBytes];
         {
@@ -17,7 +17,7 @@ public static class Hash
         return Task.FromResult(Convert.ToBase64String(saltBytes));
     }
 
-    public static Task<string> GenerateHash(string password, string salt)
+    public Task<string> GenerateHash(string password, string salt)
     {
         string hashedPassword;
         {

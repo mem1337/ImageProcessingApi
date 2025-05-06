@@ -12,12 +12,14 @@ namespace ImageProcessingService.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly IJwt _jwt;
+        private readonly IJWT _jwt;
+        private readonly IHash _hash;
 
-        public UserController(AppDbContext context, JWT jwt)
+        public UserController(AppDbContext context, IJWT jwt, IHash hash)
         {
             _context = context;
             _jwt = jwt;
+            _hash = hash;
         }
 
         // GET: api/User
@@ -57,12 +59,12 @@ namespace ImageProcessingService.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> register([FromBody] UserRegisterLogin userRegister)
         {
-            var salt = await Hash.GenerateSalt();
+            var salt = await _hash.GenerateSalt();
             
             var user = new User
             {
                 UserEmail = userRegister.UserEmail,
-                UserHash = await Hash.GenerateHash(userRegister.UserPassword,salt),
+                UserHash = await _hash.GenerateHash(userRegister.UserPassword,salt),
                 UserSalt = salt
             };
             
@@ -82,7 +84,7 @@ namespace ImageProcessingService.Controllers
         public async Task<ActionResult<UserResponse>> login([FromBody] UserRegisterLogin userLogin)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserEmail == userLogin.UserEmail);
-            if (user?.UserHash != await Hash.GenerateHash(userLogin.UserPassword, user.UserSalt))
+            if (user?.UserHash != await _hash.GenerateHash(userLogin.UserPassword, user.UserSalt))
             {
                 return NotFound();
             }

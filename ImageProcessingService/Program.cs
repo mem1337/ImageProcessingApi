@@ -23,7 +23,8 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddSingleton<IJwt, JWT>();
+        builder.Services.AddSingleton<IJWT, JWT>();
+        builder.Services.AddSingleton<IHash, Hash>();
             
 
         var requireAuthPolicy = new AuthorizationPolicyBuilder()
