@@ -24,7 +24,7 @@ public class UserController : ControllerBase
         _hash = hash;
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> users()
     {

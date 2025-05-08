@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace ImageProcessingService;
 
@@ -22,18 +23,38 @@ public class Program
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        
+        //authorize button in swagger
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] {}
+                }
+            });
+        });
+
+        
         builder.Services.AddSingleton<IJWT, JWT>();
         builder.Services.AddSingleton<IHash, Hash>();
             
-
-        var requireAuthPolicy = new AuthorizationPolicyBuilder()
-            .RequireAuthenticatedUser()
-            .Build();
-
-        builder.Services.AddAuthorizationBuilder()
-            .SetDefaultPolicy(requireAuthPolicy);
-        
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -52,6 +73,13 @@ public class Program
             };
         });
         
+        var requireAuthPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+
+        builder.Services.AddAuthorizationBuilder()
+            .SetDefaultPolicy(requireAuthPolicy);
+        
         var app = builder.Build();
         
         if (app.Environment.IsDevelopment())
@@ -61,11 +89,11 @@ public class Program
             app.MapOpenApi();
         }
 
-        app.MapControllers();
         app.UseHttpsRedirection();
-        app.UseRouting();
-        app.UseHttpsRedirection();
+        app.UseRouting();        
+        app.UseAuthentication();
         app.UseAuthorization();
+        app.MapControllers();
 
         app.Run();
     }
