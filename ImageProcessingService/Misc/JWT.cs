@@ -16,7 +16,7 @@ public class JWT : IJWT
             issuer: "https://127.0.0.1:7088",
             audience: "https://127.0.0.1:7088",
             claims: new List<Claim>(),
-            expires: DateTime.UtcNow.AddMinutes(10),
+            expires: DateTime.UtcNow.AddMinutes(5),
             signingCredentials: creds);
 
         return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
