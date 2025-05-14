@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ImageProcessingService.Context;
@@ -86,15 +87,15 @@ public class UserController : ControllerBase
     public async Task<ActionResult<UserResponse>> login([FromBody] UserRegisterLogin userLogin)
     {
         var user = await _context.Users.SingleOrDefaultAsync(u => u.UserEmail == userLogin.UserEmail);
-        if (user?.UserHash != await _hash.GenerateHash(userLogin.UserPassword, user.UserSalt))
+        if (user == null || user.UserHash != await _hash.GenerateHash(userLogin.UserPassword, user.UserSalt))
         {
             return NotFound();
         }
-            
+
         var userResponse = new UserResponse
         {
             AuthResult = true,
-            AuthToken = await _jwt.GenerateToken(),
+            AuthToken = await _jwt.GenerateToken(user.UserId),
             ExpireDate = DateTime.UtcNow.AddMinutes(5)
         };
             

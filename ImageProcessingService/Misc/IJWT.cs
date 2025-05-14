@@ -2,5 +2,5 @@ namespace ImageProcessingService.Misc;
 
 public interface IJWT
 {
-    public Task<string> GenerateToken();
+    public Task<string> GenerateToken(int userId);
 }

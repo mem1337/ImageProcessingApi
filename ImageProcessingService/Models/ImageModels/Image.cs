@@ -6,9 +6,8 @@ namespace ImageProcessingService.Models.ImageModels;
 public class Image
 {
     public int ImageId { get; set; }
-    public byte[] ImageBytes { get; set; }
+    public string ImageLocation { get; set; }
     public string ImageExtension { get; set; }
-    public string ImageSize { get; set; }
     public int ImageUserId { get; set; }
     public User User { get; set; }
 }

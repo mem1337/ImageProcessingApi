@@ -1,8 +1,15 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ImageProcessingService.Context;
+using ImageProcessingService.Misc;
 using ImageProcessingService.Models.ImageModels;
 using Microsoft.AspNetCore.Authorization;
+using NuGet.Protocol;
 
 namespace ImageProcessingService.Controllers
 {
@@ -27,16 +34,21 @@ namespace ImageProcessingService.Controllers
 
         // GET: api/Image/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Image>> GetImage(int id)
+        public async Task<IActionResult> images(int id)
         {
+            var bearer = HttpContext.Request.Headers.Authorization.ToString();
+            var token = new JwtSecurityToken(bearer[7..]);
+            var userId = Convert.ToInt32(token.Claims.FirstOrDefault(c => c.Type == "user_id").Value);
+            
             var image = await _context.Images.FindAsync(id);
-
-            if (image == null)
+            
+            if (image == null || image.ImageUserId != userId)
             {
-                return NotFound();
+                return BadRequest();
             }
 
-            return image;
+            var stream = new FileStream(image.ImageLocation, FileMode.Open, FileAccess.Read);
+            return File(stream, "application/octet-stream", image.ImageLocation[38..]);;
         }
 
         // PUT: api/Image/5
@@ -69,16 +81,44 @@ namespace ImageProcessingService.Controllers
 
             return NoContent();
         }
-
-        // POST: api/Image
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    
+        [Consumes("multipart/form-data")]
         [HttpPost]
-        public async Task<ActionResult<Image>> PostImage(Image image)
+        public async Task<ActionResult<ImageResponse>> images(IFormFile imageFile)
         {
+            var bearer = HttpContext.Request.Headers.Authorization.ToString();
+            var token = new JwtSecurityToken(bearer[7..]);
+            var userId = token.Claims.FirstOrDefault(c => c.Type == "user_id").Value;
+
+            var sizeInKiloBytes = 2048 * 1024;
+            if (imageFile.Length > sizeInKiloBytes)
+            {
+                return BadRequest();
+            }
+            
+            var saveFilePath = Path.Combine("/home/anon/RiderProjects/ImageStorage/", imageFile.FileName);
+            await using (var stream = new FileStream(saveFilePath, FileMode.Create))
+            {
+                await imageFile.CopyToAsync(stream);
+            }
+            
+            var image = new Image
+            {
+                ImageLocation = saveFilePath,
+                ImageExtension = Path.GetExtension(saveFilePath),
+                ImageUserId = Convert.ToInt32(userId)
+            };
+            
             _context.Images.Add(image);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetImage", new { id = image.ImageId }, image);
+            var imageResponse = new ImageResponse
+            {
+                ImageId = image.ImageId,
+                ImageLocation = image.ImageLocation
+            };
+            
+            return CreatedAtAction("GetImage", new { id = image.ImageId }, imageResponse);
         }
 
         // DELETE: api/Image/5
