@@ -17,6 +17,7 @@
           "Microsoft.EntityFrameworkCore.Tools": "9.0.4",
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": "9.0.0",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
+          "SixLabors.ImageSharp": "3.1.8",
           "Swashbuckle.AspNetCore.Swagger": "8.1.1",
           "Swashbuckle.AspNetCore.SwaggerGen": "8.1.1",
           "Swashbuckle.AspNetCore.SwaggerUI": "8.1.1"
@@ -1932,6 +1933,14 @@
           }
         }
       },
+      "SixLabors.ImageSharp/3.1.8": {
+        "runtime": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.1.8.0"
+          }
+        }
+      },
       "SQLitePCLRaw.bundle_e_sqlite3/2.1.10": {
         "dependencies": {
           "SQLitePCLRaw.lib.e_sqlite3": "2.1.10",
@@ -3192,6 +3201,13 @@
       "sha512": "sha512-v/GGlIj2dd7svplFmASWEueu62veKW0MrMtBaZ7QG8aJTSGv2yE+pgUGhXRcQ4nxNOEq/wLBrz1vkth/1SND7A==",
       "path": "nuget.versioning/6.11.0",
       "hashPath": "nuget.versioning.6.11.0.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp/3.1.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8eJkROLGh6DBQLR666q2aOpAaean2puZaZ6Ur9YxoyGzjaZhv8OJSxtnDou54+OXMkXtLUdyQC0so47sOsqZjg==",
+      "path": "sixlabors.imagesharp/3.1.8",
+      "hashPath": "sixlabors.imagesharp.3.1.8.nupkg.sha512"
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.10": {
       "type": "package",

@@ -1,15 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ImageProcessingService.Context;
 using ImageProcessingService.Misc;
 using ImageProcessingService.Models.ImageModels;
 using Microsoft.AspNetCore.Authorization;
-using NuGet.Protocol;
 
 namespace ImageProcessingService.Controllers
 {
@@ -19,10 +14,12 @@ namespace ImageProcessingService.Controllers
     public class ImageController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ITransform _transform;
 
-        public ImageController(AppDbContext context)
+        public ImageController(AppDbContext context, ITransform transform)
         {
             _context = context;
+            _transform = transform;
         }
 
         // GET: api/Image
@@ -121,6 +118,44 @@ namespace ImageProcessingService.Controllers
             return CreatedAtAction("GetImage", new { id = image.ImageId }, imageResponse);
         }
 
+        [HttpPost("{id}/transform")]
+        public async Task<IActionResult> images(int id, [FromBody] Transformation transformation)
+        {
+            var image = await _context.Images.FindAsync(id);
+
+            if (image == null)
+            {
+                return NotFound();
+            }
+            
+            if (transformation.Resize is { Width: > 0, Heigth: > 0 })
+            {
+                await _transform.Resize(image.ImageLocation, transformation.Resize.Width, transformation.Resize.Heigth);
+            }
+
+            if (transformation.Crop is { Width: > 0, Height: > 0 })
+            {
+                await _transform.Crop(image.ImageLocation, transformation.Resize.Width, transformation.Resize.Heigth);
+            }
+            
+            if (transformation.Rotate.Number > 0)
+            {
+                await _transform.Rotate(image.ImageLocation, transformation.Rotate.Number);
+            }
+
+            if (transformation.Format.ImageFormat != 0)
+            {
+                await _transform.Format(image.ImageLocation, transformation.Format.ImageFormat);
+            }
+            
+            if (transformation.Filter.Grayscale || transformation.Filter.Sepia)
+            {
+                await _transform.Filter(image.ImageLocation, transformation.Filter.Grayscale, transformation.Filter.Sepia);
+            }
+            
+            return Ok();
+        }
+        
         // DELETE: api/Image/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteImage(int id)

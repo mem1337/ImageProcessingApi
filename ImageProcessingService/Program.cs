@@ -54,6 +54,7 @@ public class Program
         
         builder.Services.AddSingleton<IJWT, JWT>();
         builder.Services.AddSingleton<IHash, Hash>();
+        builder.Services.AddSingleton<ITransform, Transform>();
             
         builder.Services.AddAuthentication(options =>
         {

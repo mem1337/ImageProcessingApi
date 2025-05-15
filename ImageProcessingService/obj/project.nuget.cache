@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "j1VJgAH/S50=",
+  "dgSpecHash": "6DGJgvgkDKI=",
   "success": true,
   "projectFilePath": "/home/anon/RiderProjects/ImageProcessingService/ImageProcessingService/ImageProcessingService.csproj",
   "expectedPackageFiles": [
@@ -130,6 +130,7 @@
     "/home/anon/.nuget/packages/nuget.projectmodel/6.11.0/nuget.projectmodel.6.11.0.nupkg.sha512",
     "/home/anon/.nuget/packages/nuget.protocol/6.11.0/nuget.protocol.6.11.0.nupkg.sha512",
     "/home/anon/.nuget/packages/nuget.versioning/6.11.0/nuget.versioning.6.11.0.nupkg.sha512",
+    "/home/anon/.nuget/packages/sixlabors.imagesharp/3.1.8/sixlabors.imagesharp.3.1.8.nupkg.sha512",
     "/home/anon/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.10/sqlitepclraw.bundle_e_sqlite3.2.1.10.nupkg.sha512",
     "/home/anon/.nuget/packages/sqlitepclraw.core/2.1.10/sqlitepclraw.core.2.1.10.nupkg.sha512",
     "/home/anon/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.10/sqlitepclraw.lib.e_sqlite3.2.1.10.nupkg.sha512",
