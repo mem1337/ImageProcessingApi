@@ -1,57 +1,79 @@
+using System.Reflection;
 using ImageProcessingService.Models.ImageModels;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using Image = SixLabors.ImageSharp.Image;
+using ImageSharp = SixLabors.ImageSharp.Image;
+using Image = ImageProcessingService.Models.ImageModels.Image;
 
 namespace ImageProcessingService.Misc;
 
 
 public class Transform : ITransform
 {
-    public async Task Resize(string imageLocation, int width, int height)
+    public async Task Resize(Image imageFile, int width, int height)
     {
-        using (Image image = Image.Load(imageLocation))
+        using (ImageSharp image = await ImageSharp.LoadAsync(imageFile.ImageLocationFull))
         {
             image.Mutate(x => x.Resize(width,height));
-            image.Save(imageLocation);
+            await image.SaveAsync(imageFile.ImageLocationFull);
         }
     }
 
-    public async Task Crop(string imageLocation, int width, int height)
+    public async Task Crop(Image imageFile, int width, int height)
     {
-        using (Image image = Image.Load(imageLocation))
+        using (ImageSharp image = await ImageSharp.LoadAsync(imageFile.ImageLocationFull))
         {
             image.Mutate(x => x.Crop(width,height));
-            image.Save(imageLocation);
+            await image.SaveAsync(imageFile.ImageLocationFull);
         }
     }
 
-    public async Task Rotate(string imageLocation, int rotations)
+    public async Task Rotate(Image imageFile, int rotations)
     {
-        using (Image image = Image.Load(imageLocation))
+        using (ImageSharp image = await ImageSharp.LoadAsync(imageFile.ImageLocationFull))
         {
             var degrees = 90 * rotations;
             image.Mutate(x => x.Rotate(degrees));
-            image.Save(imageLocation);
+            await image.SaveAsync(imageFile.ImageLocationFull);
         }
     }
 
-    public async Task Format(string imageLocation, ImageFormat format)
+    public async Task<(string, string)> Format(Image imageFile, ImageFormat format)
     {
-        using (Image image = Image.Load(imageLocation))
+        using (ImageSharp image = await ImageSharp.LoadAsync(imageFile.ImageLocationFull))
         {
+            var path = $"{imageFile.ImageLocation}{imageFile.ImageName}";
+            switch (format)
+            {
+                case ImageFormat.png:
+                {
+                    await image.SaveAsPngAsync($"{path}.png");
+                    return (path,".png");
+                }
+                case ImageFormat.bmp:
+                {
+                    await image.SaveAsBmpAsync($"{path}.bmp");
+                    return (path,".bmp");
+                }
+                case ImageFormat.jpeg:
+                {
+                    await image.SaveAsJpegAsync($"{path}.jpeg");
+                    return (path,".jpeg");
+                }
+            }
         }
+        return (null,null);
     }
 
-    public async Task Filter(string imageLocation, bool grayscale, bool sepia)
+    public async Task Filter(Image imageFile, bool grayscale, bool sepia)
     {
-        using (Image image = Image.Load(imageLocation))
+        using (ImageSharp image = await ImageSharp.LoadAsync(imageFile.ImageLocationFull))
         {
             if (grayscale) image.Mutate(x=>x.Grayscale());
             
             if (sepia) image.Mutate(x=>x.Sepia());
             
-            image.Save(imageLocation);
+            await image.SaveAsync(imageFile.ImageLocationFull);
         }
     }
 

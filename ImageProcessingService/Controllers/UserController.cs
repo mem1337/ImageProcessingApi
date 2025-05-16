@@ -1,11 +1,9 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ImageProcessingService.Context;
 using ImageProcessingService.Misc;
 using ImageProcessingService.Models;
 using ImageProcessingService.Models.UserModels;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ImageProcessingService.Controllers;
@@ -27,7 +25,7 @@ public class UserController : ControllerBase
 
     [Authorize]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDto>>> users()
+    public async Task<ActionResult<IEnumerable<UserDto>>> Users()
     {
         var userDtos = await _context.Users
             .Select(u => new UserDto
@@ -41,7 +39,7 @@ public class UserController : ControllerBase
 
     [Authorize]
     [HttpGet("{id}")]
-    public async Task<ActionResult<UserDto>> users(int id)
+    public async Task<ActionResult<UserDto>> Users(int id)
     {
         var user = await _context.Users.FindAsync(id);
 
@@ -60,7 +58,7 @@ public class UserController : ControllerBase
     }
         
     [HttpPost]
-    public async Task<ActionResult<User>> register([FromBody] UserRegisterLogin userRegister)
+    public async Task<ActionResult<User>> Register([FromBody] UserRegisterLogin userRegister)
     {
         var salt = await _hash.GenerateSalt();
             
@@ -84,7 +82,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<UserResponse>> login([FromBody] UserRegisterLogin userLogin)
+    public async Task<ActionResult<UserResponse>> Login([FromBody] UserRegisterLogin userLogin)
     {
         var user = await _context.Users.SingleOrDefaultAsync(u => u.UserEmail == userLogin.UserEmail);
         if (user == null || user.UserHash != await _hash.GenerateHash(userLogin.UserPassword, user.UserSalt))

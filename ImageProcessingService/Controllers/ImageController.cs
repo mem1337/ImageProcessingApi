@@ -1,4 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ImageProcessingService.Context;
@@ -31,11 +33,11 @@ namespace ImageProcessingService.Controllers
 
         // GET: api/Image/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> images(int id)
+        public async Task<IActionResult> Images(int id)
         {
             var bearer = HttpContext.Request.Headers.Authorization.ToString();
             var token = new JwtSecurityToken(bearer[7..]);
-            var userId = Convert.ToInt32(token.Claims.FirstOrDefault(c => c.Type == "user_id").Value);
+            var userId = Convert.ToInt32(token.Claims.FirstOrDefault(c => c.Type == "user_id")?.Value);
             
             var image = await _context.Images.FindAsync(id);
             
@@ -45,7 +47,7 @@ namespace ImageProcessingService.Controllers
             }
 
             var stream = new FileStream(image.ImageLocation, FileMode.Open, FileAccess.Read);
-            return File(stream, "application/octet-stream", image.ImageLocation[38..]);;
+            return File(stream, "application/octet-stream", image.ImageLocation[38..]);
         }
 
         // PUT: api/Image/5
@@ -81,19 +83,35 @@ namespace ImageProcessingService.Controllers
     
         [Consumes("multipart/form-data")]
         [HttpPost]
-        public async Task<ActionResult<ImageResponse>> images(IFormFile imageFile)
+        public async Task<ActionResult<ImageResponse>> Images(IFormFile imageFile)
         {
             var bearer = HttpContext.Request.Headers.Authorization.ToString();
             var token = new JwtSecurityToken(bearer[7..]);
-            var userId = token.Claims.FirstOrDefault(c => c.Type == "user_id").Value;
+            var userId = token.Claims.FirstOrDefault(c => c.Type == "user_id")?.Value;
 
             var sizeInKiloBytes = 2048 * 1024;
             if (imageFile.Length > sizeInKiloBytes)
             {
                 return BadRequest();
             }
+
+            string imageName;
             
-            var saveFilePath = Path.Combine("/home/anon/RiderProjects/ImageStorage/", imageFile.FileName);
+            {
+                byte[] saltBytes = new byte[32];
+                {
+                    var rng = RandomNumberGenerator.Create();
+                    rng.GetBytes(saltBytes);
+                }
+                var randomName = Convert.ToBase64String(saltBytes);
+                var md5 = MD5.Create();
+                var inputBytes = Encoding.ASCII.GetBytes($"{imageFile.FileName}{randomName}");
+                var hashBytes = md5.ComputeHash(inputBytes);
+                imageName = Convert.ToHexString(hashBytes);
+            }
+            
+            var imageFolder = "/home/anon/RiderProjects/ImageStorage/";
+            var saveFilePath = Path.Combine(imageFolder, $"{imageName}{Path.GetExtension(imageFile.FileName)}");
             await using (var stream = new FileStream(saveFilePath, FileMode.Create))
             {
                 await imageFile.CopyToAsync(stream);
@@ -101,8 +119,10 @@ namespace ImageProcessingService.Controllers
             
             var image = new Image
             {
-                ImageLocation = saveFilePath,
-                ImageExtension = Path.GetExtension(saveFilePath),
+                ImageName = imageName,
+                ImageLocation = imageFolder,
+                ImageExtension = Path.GetExtension(imageFile.FileName),
+                ImageLocationFull = saveFilePath,
                 ImageUserId = Convert.ToInt32(userId)
             };
             
@@ -115,42 +135,50 @@ namespace ImageProcessingService.Controllers
                 ImageLocation = image.ImageLocation
             };
             
-            return CreatedAtAction("GetImage", new { id = image.ImageId }, imageResponse);
+            return CreatedAtAction("Images", new { id = image.ImageId }, imageResponse);
         }
 
-        [HttpPost("{id}/transform")]
-        public async Task<IActionResult> images(int id, [FromBody] Transformation transformation)
+        [HttpPost("{id}/Transform")]
+        public async Task<IActionResult> Images(int id, [FromBody] Transformation transformation)
         {
+            var bearer = HttpContext.Request.Headers.Authorization.ToString();
+            var token = new JwtSecurityToken(bearer[7..]);
+            var userId = Convert.ToInt32(token.Claims.FirstOrDefault(c => c.Type == "user_id")?.Value);
+            
             var image = await _context.Images.FindAsync(id);
 
-            if (image == null)
+            if (image == null || image.ImageUserId != userId)
             {
                 return NotFound();
             }
             
             if (transformation.Resize is { Width: > 0, Heigth: > 0 })
             {
-                await _transform.Resize(image.ImageLocation, transformation.Resize.Width, transformation.Resize.Heigth);
+                await _transform.Resize(image, transformation.Resize.Width, transformation.Resize.Heigth);
             }
 
             if (transformation.Crop is { Width: > 0, Height: > 0 })
             {
-                await _transform.Crop(image.ImageLocation, transformation.Resize.Width, transformation.Resize.Heigth);
+                await _transform.Crop(image, transformation.Resize.Width, transformation.Resize.Heigth);
             }
             
             if (transformation.Rotate.Number > 0)
             {
-                await _transform.Rotate(image.ImageLocation, transformation.Rotate.Number);
+                await _transform.Rotate(image, transformation.Rotate.Number);
             }
 
             if (transformation.Format.ImageFormat != 0)
             {
-                await _transform.Format(image.ImageLocation, transformation.Format.ImageFormat);
+                var locationExtension = await _transform.Format(image, transformation.Format.ImageFormat);
+                image.ImageLocationFull = $"{locationExtension.Item1}{locationExtension.Item2}";
+                image.ImageExtension = locationExtension.Item2;
+                _context.Entry(image).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
             }
             
             if (transformation.Filter.Grayscale || transformation.Filter.Sepia)
             {
-                await _transform.Filter(image.ImageLocation, transformation.Filter.Grayscale, transformation.Filter.Sepia);
+                await _transform.Filter(image, transformation.Filter.Grayscale, transformation.Filter.Sepia);
             }
             
             return Ok();

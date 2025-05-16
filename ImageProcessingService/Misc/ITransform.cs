@@ -4,9 +4,9 @@ namespace ImageProcessingService.Misc;
 
 public interface ITransform
 {
-    public Task Resize(string imageLocation, int width, int height);
-    public Task Crop(string imageLocation, int width, int height);
-    public Task Rotate(string imageLocation, int rotations);
-    public Task Format(string imageLocation, ImageFormat format);
-    public Task Filter(string imageLocation, bool grayscale, bool sepia);
+    public Task Resize(Image imageFile, int width, int height);
+    public Task Crop(Image imageFile, int width, int height);
+    public Task Rotate(Image imageFile, int rotations);
+    public Task<(string, string)> Format(Image imageFile, ImageFormat format);
+    public Task Filter(Image imageFile, bool grayscale, bool sepia);
 }

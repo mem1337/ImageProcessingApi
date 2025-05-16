@@ -8,6 +8,6 @@ public class Format
 public enum ImageFormat
 {
     png=1,
-    jpg=2,
+    bmp=2,
     jpeg=3
 }
