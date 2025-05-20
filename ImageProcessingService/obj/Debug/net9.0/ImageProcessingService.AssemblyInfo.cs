@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ImageProcessingService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb7ce7c781e02c2f1a49d49050506202270d4f32")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4b9e6bfea3125a014460ce1902af71a9638ed284")]
 [assembly: System.Reflection.AssemblyProductAttribute("ImageProcessingService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ImageProcessingService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
